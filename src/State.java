@@ -2,18 +2,21 @@ import java.util.ArrayList;
 
 public class State {
 	ArrayList<Integer> board;
+	int h;
 	
 	public State() {
 		this.board = new ArrayList<Integer>();
+		this.h = 0;
 	}
 	
-	public State(ArrayList<Integer> board) {
+	public State(ArrayList<Integer> board, int h) {
 		this.board = board;
+		this.h = h;
 	}
 	
 	public State copy() {
 		ArrayList<Integer> board_copy = (ArrayList<Integer>) this.board.clone();
-		State st_copy = new State(board_copy);
+		State st_copy = new State(board_copy, this.h);
 		return st_copy;
 	}
 	
@@ -30,7 +33,6 @@ public class State {
 	            return false;
 	        }
 	    }
-
 	    return true;
 	}
 }
