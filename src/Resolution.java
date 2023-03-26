@@ -9,6 +9,10 @@ public class Resolution {
 	int nb_node_dfs = 0;
 	int nb_node_bfs = 0;
 	int nb_node_AStar1 = 0;
+
+	double time_dfs = 0;
+	double time_bfs = 0;
+	double time_AStar1 = 0;
 	
 	public Resolution(int boardSize) {
 		this.boardSize = boardSize;
@@ -16,6 +20,7 @@ public class Resolution {
 	
 	
 	public State DFS() {
+		double start = System.currentTimeMillis();
 		Stack<State> stack = new Stack<State>();
 		State init_state = new State();
 		ArrayList<State> closed = new ArrayList<State>();
@@ -25,7 +30,11 @@ public class Resolution {
 			State current_state = stack.pop();
 			closed.add(current_state);
 			
-			if(current_state.board.size() == this.boardSize) return current_state;
+			if(current_state.board.size() == this.boardSize) {
+				double end = System.currentTimeMillis();
+				this.time_dfs = end - start;
+				return current_state;
+			}
 			else {
 				int row = current_state.board.size();
 				for(int col=this.boardSize; col>0; col--) {
@@ -44,6 +53,7 @@ public class Resolution {
 	
 	
 	public State BFS() {
+		double start = System.currentTimeMillis();
 		LinkedList<State> queue = new LinkedList<State>();;
 		State init_state = new State();
 		ArrayList<State> closed = new ArrayList<State>();
@@ -53,7 +63,11 @@ public class Resolution {
 			State current_state = queue.remove();
 			closed.add(current_state);
 			
-			if(current_state.board.size() == this.boardSize) return current_state;
+			if(current_state.board.size() == this.boardSize) {
+				double end = System.currentTimeMillis();
+				this.time_bfs = end - start;
+				return current_state;
+			}
 			else {
 				int row = current_state.board.size();
 				for(int col=1; col<=this.boardSize; col++) {
@@ -72,6 +86,7 @@ public class Resolution {
 
 
 	public State AStar1() {
+		double start = System.currentTimeMillis();	
 		LinkedList<State> open = new LinkedList<State>();
 		ArrayList<State> closed = new ArrayList<State>();
 		State init_state = new State();
@@ -88,7 +103,11 @@ public class Resolution {
 			State current_state = open.remove();
 			closed.add(current_state);
 			
-			if(current_state.board.size() == this.boardSize) return current_state;
+			if(current_state.board.size() == this.boardSize) {
+				double end = System.currentTimeMillis();
+				this.time_AStar1 = end - start;
+				return current_state;
+			}
 			else {
 				int row = current_state.board.size();
 				for(int col=1; col<=this.boardSize; col++) {

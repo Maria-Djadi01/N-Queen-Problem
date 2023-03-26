@@ -35,4 +35,14 @@ public class State {
 	    }
 	    return true;
 	}
+
+	public boolean boardValid() {
+		for(int row=0; row<this.board.size(); row++) {
+			int col = this.board.get(row);
+			if(!this.isSafe(row, col)) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
