@@ -30,20 +30,18 @@ public class Resolution {
 			State current_state = stack.pop();
 			closed.add(current_state);
 			
-			if(current_state.board.size() == this.boardSize) {
+			if(current_state.board.size() == this.boardSize && current_state.boardValid()) {
 				double end = System.currentTimeMillis();
 				this.time_dfs = end - start;
 				return current_state;
 			}
-			else {
+			else if(current_state.board.size() != this.boardSize) {
 				int row = current_state.board.size();
 				for(int col=this.boardSize; col>0; col--) {
 					State st_cp = current_state.copy();
 					this.nb_node_dfs++;
-					if(st_cp.isSafe(row, col)) {
 						st_cp.board.add(col);
 						stack.push(st_cp);
-					}
 				}
 			}
 		}
@@ -63,7 +61,7 @@ public class Resolution {
 			State current_state = queue.remove();
 			closed.add(current_state);
 			
-			if(current_state.board.size() == this.boardSize) {
+			if(current_state.board.size() == this.boardSize && current_state.boardValid()) {
 				double end = System.currentTimeMillis();
 				this.time_bfs = end - start;
 				return current_state;
@@ -73,10 +71,8 @@ public class Resolution {
 				for(int col=1; col<=this.boardSize; col++) {
 					State st_cp = current_state.copy();
 					this.nb_node_bfs++;
-					if(st_cp.isSafe(row, col)) {
 						st_cp.board.add(col);
 						queue.add(st_cp);
-					}
 				}
 			}
 		}
