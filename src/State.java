@@ -1,25 +1,31 @@
 import java.util.ArrayList;
 
 public class State {
+	// the board is presented by an array where the index is the row and the value is the column
 	ArrayList<Integer> board;
+	// the heuristic value of the state
 	int h;
 	
+	// initialization constructor
 	public State() {
 		this.board = new ArrayList<Integer>();
 		this.h = 0;
 	}
 	
+	// constructor
 	public State(ArrayList<Integer> board, int h) {
 		this.board = board;
 		this.h = h;
 	}
-	
+
+	// method that returns a copy of this state
 	public State copy() {
 		ArrayList<Integer> board_copy = (ArrayList<Integer>) this.board.clone();
 		State st_copy = new State(board_copy, this.h);
 		return st_copy;
 	}
-	
+
+	// method that returns if the new added queen is safe or not
 	public boolean isSafe(int row, int col) {
 	    if (row == 0) return true;
 	    
@@ -34,6 +40,7 @@ public class State {
 	    return true;
 	}
 
+	// method that checks if this board is a correct solution
 	public boolean boardValid() {
 		for(int row=1; row<=this.board.size(); row++) {
 			int col = this.board.get(row-1);
@@ -45,5 +52,13 @@ public class State {
 			}
 		}
 		return true;
+	}
+
+	// method that returns the euclidean distance between the new added query and the last one
+	public int computeEuclideanDistance(int row, int col) {
+		int distance;
+		if(this.board.size() == 0) distance = (int) (Math.sqrt(Math.pow(row - 1, 2) + Math.pow(col - 1, 2)) * (-1));
+		else distance = (int) (Math.sqrt(Math.pow(row - this.board.size(), 2) + Math.pow(col - this.board.get(this.board.size()-1), 2)) * (-1));
+		return distance;
 	}
 }
