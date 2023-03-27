@@ -40,18 +40,23 @@ public class State {
 	    return true;
 	}
 
+
 	// method that checks if this board is a correct solution
-	public boolean boardValid() {
+	public int evaluation() {
+		int nb_queens_under_attack = 0;
 		for(int row=1; row<=this.board.size(); row++) {
 			int col = this.board.get(row-1);
 			ArrayList<Integer> subBoard = new ArrayList<Integer>(this.board.subList(0, row-1));
-			if(subBoard.contains(col)) return false;
-			for(int r=row+1; r<=this.board.size(); r++) {
-				int c = this.board.get(r-1);
-				if(Math.abs(row - r) == Math.abs(col - c) || row + col == r + c) return false;
+			if(subBoard.contains(col)) nb_queens_under_attack++;
+			else {
+				for(int r=row+1; r<=this.board.size(); r++) {
+					int c = this.board.get(r-1);
+					if(Math.abs(row - r) == Math.abs(col - c) || row + col == r + c) nb_queens_under_attack++;
+				}
 			}
+			
 		}
-		return true;
+		return nb_queens_under_attack;
 	}
 
 	// method that returns the euclidean distance between the new added query and the last one

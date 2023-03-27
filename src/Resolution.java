@@ -40,7 +40,7 @@ public class Resolution {
 			
 			// check if the current state is a solution by checking if its size is equal to the board size we want to build 
 			// and if the board is valid (no queens can attack each other)
-			if(current_state.board.size() == this.boardSize && current_state.boardValid()) {
+			if(current_state.board.size() == this.boardSize && current_state.evaluation() == 0) {
 				double end = System.currentTimeMillis();
 				this.time_dfs = end - start;
 				return current_state;
@@ -81,7 +81,7 @@ public class Resolution {
 			
 			// check if the current state is a solution by checking if its size is equal to the board size we want to build
 			// and if the board is valid (no queens can attack each other)
-			if(current_state.board.size() == this.boardSize && current_state.boardValid()) {
+			if(current_state.board.size() == this.boardSize && current_state.evaluation() == 0) {
 				double end = System.currentTimeMillis();
 				this.time_bfs = end - start;
 				return current_state;
@@ -181,7 +181,7 @@ public class Resolution {
 
 			// check if the state is a solution by checking if its size is equal to the board size we want to build
 			// and if the board is valid (no queens can attack each other) because it's a non admissible heuristic
-			if(current_state.board.size() == this.boardSize && current_state.boardValid()) {
+			if(current_state.board.size() == this.boardSize && current_state.evaluation() == 0) {
 				double end = System.currentTimeMillis();
 				this.time_AStar2 = end - start;
 				return current_state;
