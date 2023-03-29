@@ -54,7 +54,6 @@ public class State {
 					if(Math.abs(row - r) == Math.abs(col - c) || row + col == r + c) nb_queens_under_attack++;
 				}
 			}
-			
 		}
 		return nb_queens_under_attack;
 	}
