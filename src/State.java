@@ -17,6 +17,7 @@ public class State {
 		this.board = board;
 		this.h = h;
 	}
+	
 
 	// method that returns a copy of this state
 	public State copy() {

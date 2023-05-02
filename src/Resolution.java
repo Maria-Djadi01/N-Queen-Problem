@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Stack;
 
 public class Resolution { 
@@ -10,11 +11,15 @@ public class Resolution {
 	int nb_node_bfs = 0;
 	int nb_node_AStar1 = 0;
 	int nb_node_AStar2 = 0;
+	int nb_node_genetic = 0;
+	int nb_node_pso = 0;
 
 	double time_dfs = 0;
 	double time_bfs = 0;
 	double time_AStar1 = 0;
 	double time_AStar2 = 0;
+	double time_genetic = 0;
+	double time_pso = 0;
 
 	public Resolution(int boardSize) {
 		this.boardSize = boardSize;
@@ -201,5 +206,192 @@ public class Resolution {
 			}
 		}
 		return null;
+	}
+
+	State generateRandomBoard() {
+		State st = new State();
+		for(int i=0; i<this.boardSize; i++) {
+			int col = (int) (Math.random() * this.boardSize) + 1;
+			st.board.add(col);
+		}
+		return st;
+	}
+
+	PriorityQueue<State> generateRandomPopulation(int size) {
+		PriorityQueue<State> population = new PriorityQueue<State>(new Comparator<State>() {
+			@Override
+			public int compare(State s1, State s2) {
+				return Integer.compare(s1.evaluation(), s2.evaluation());
+			}
+		});
+
+		for(int i=0; i<size; i++) {
+			State st = generateRandomBoard();
+			population.add(st);
+		}
+		return population;
+	}
+
+	PriorityQueue<State> selection(PriorityQueue<State> population, int selectionSize) {
+		PriorityQueue<State> selected = new PriorityQueue<State>(new Comparator<State>() {
+			@Override
+			public int compare(State s1, State s2) {
+				return Integer.compare(s1.evaluation(), s2.evaluation());
+			}
+		});
+
+		for(int i=0; i<selectionSize; i++) {
+			selected.add(population.poll());
+		}
+		return selected;
+	}
+
+	ArrayList<State> crossover(PriorityQueue<State> selected, double crossOverRate) {
+		ArrayList<State> children = new ArrayList<State>();
+		ArrayList<State> selected_ArrayList = new ArrayList<State>(selected);
+		int nb_pairs = (int)(selected.size()/2);
+		for(int i=0; i<nb_pairs; i++) {
+			State parent1 = selected_ArrayList.get((int) (Math.random() * selected.size()));
+			State parent2 = selected_ArrayList.get((int) (Math.random() * selected.size()));
+			if(Math.random() < crossOverRate) {
+				State child1 = new State();
+				State child2 = new State();
+
+				int cross_point = (int) (Math.random() * this.boardSize);
+
+				for(int j=0; j<cross_point; j++) {
+					child1.board.add(parent1.board.get(j));
+					child2.board.add(parent2.board.get(j));
+				}
+
+				for(int j=cross_point; j<this.boardSize; j++) {
+					child1.board.add(parent2.board.get(j));
+					child2.board.add(parent1.board.get(j));
+				}
+
+				children.add(child1);
+				children.add(child2);
+			}
+			else {
+				children.add(parent1);
+				children.add(parent2);
+			}
+		}
+		return children;
+	}
+
+	ArrayList<State> mutation(ArrayList<State> children, double mutationRate) {
+		ArrayList<State> mutated = new ArrayList<State>();
+		for(State child : children) {
+			if(Math.random() < mutationRate) {
+				int row = (int) (Math.random() * this.boardSize);
+				int col = (int) (Math.random() * this.boardSize) + 1;
+				child.board.set(row, col);
+			}
+			mutated.add(child);
+		}
+		return mutated;
+	}
+
+	public State geneticAlgorithm(int populationSize, int selectionSize, int nb_generations, double crossOverRate, double mutationRate) {
+		double start = System.currentTimeMillis();
+		// generate a random population
+		PriorityQueue<State> population = generateRandomPopulation(populationSize);
+		// keep track of best solution found
+		State bestSolution = population.peek();
+		// repeat until the population is empty
+		for(int i=0 ; i<nb_generations ; i++) {
+			// select the best individuals from the population
+			PriorityQueue<State> selected = selection(population, selectionSize);
+			// generate the children from the selected individuals
+			ArrayList<State> children = crossover(selected, crossOverRate);
+			// mutate the children
+			ArrayList<State> mutated = mutation(children, mutationRate);
+			// remove the selected individuals from the population
+			population.removeAll(selected);
+			// add the mutated children to the population
+			population.addAll(mutated);
+			// check if one of the individuals in the population is a solution
+			if(bestSolution.evaluation() > population.peek().evaluation()) {
+				bestSolution = population.peek();
+			}
+			if(bestSolution.evaluation() == 0) {
+				double end = System.currentTimeMillis();
+				this.time_genetic = end - start;
+				this.nb_node_genetic = nb_generations * populationSize;
+				return bestSolution;
+			}
+		}
+		double end = System.currentTimeMillis();
+		this.time_genetic = end - start;
+		this.nb_node_genetic = nb_generations * populationSize;
+		return bestSolution;
+	}
+
+	public State selectGBest(ArrayList<State> swarm) {
+		State Gbest = swarm.get(0);
+		for(int i=1; i<swarm.size(); i++) {
+			if(swarm.get(i).evaluation() < Gbest.evaluation()) {
+				Gbest = swarm.get(i);
+			}
+		}
+		return Gbest;
+	}
+
+	public State PSO(int swarm_size, int max_iter, double weight, double c1, double c2) {
+		double start = System.currentTimeMillis();
+		// initialize swarm
+		ArrayList<State> swarm = new ArrayList<State>(generateRandomPopulation(swarm_size));
+		ArrayList<State> PbestArray = new ArrayList<State>();
+		ArrayList<ArrayList<Double>> velocityArray = new ArrayList<ArrayList<Double>>();
+		// select Gbest
+		State Gbest = selectGBest(swarm);
+		// initialize Pbest 
+		for(int i=0; i<swarm_size; i++) {
+			PbestArray.add(swarm.get(i));
+		}
+
+		// initialize velocity
+		for(int i=0; i<swarm_size; i++) {
+			ArrayList<Double> velocity = new ArrayList<Double>();
+			for(int j=0; j<this.boardSize; j++) {
+				double v = (int) (Math.random() * boardSize) + 1;
+				double velocit = weight * v + c1 * Math.random() * (PbestArray.get(i).board.get(j) - swarm.get(i).board.get(j)) + c2 * Math.random() * (Gbest.board.get(j) - swarm.get(i).board.get(j));
+				velocity.add(velocit);
+			}
+			velocityArray.add(velocity);
+		}
+
+		for(int i=0; i<max_iter; i++) {
+			for(int j=0; j<swarm_size; j++) {
+				State Pbest = PbestArray.get(j);
+				State particle = swarm.get(j);
+				// update velocity
+				for(int k=0; k<this.boardSize; k++) {
+					double velocity = weight * velocityArray.get(j).get(k) + c1 * Math.random() * (Pbest.board.get(k) - particle.board.get(k)) + c2 * Math.random() * (Gbest.board.get(k) - particle.board.get(k));
+					velocityArray.get(j).set(k, velocity);
+					int position = (int) (particle.board.get(k) + velocity);
+					if(position <= this.boardSize && position >= 1) {
+						particle.board.set(k, position);
+					}
+					else if(position > this.boardSize) {
+						particle.board.set(k, this.boardSize);
+					}
+					else if(position < 1) {
+						particle.board.set(k, 1);
+					}
+				}
+				// update Pbest
+				if(Pbest.evaluation() > particle.evaluation()) {
+					PbestArray.set(j, particle);
+				}
+			}
+			// update Gbest
+			Gbest = selectGBest(PbestArray);
+		}
+		
+		this.nb_node_pso = swarm_size;
+		this.time_pso = System.currentTimeMillis() - start;
+		return Gbest;
 	}
 }
